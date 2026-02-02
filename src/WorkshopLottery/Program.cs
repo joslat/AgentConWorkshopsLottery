@@ -1,37 +1,34 @@
 ﻿using WorkshopLottery.Models;
+using WorkshopLottery.Services;
 
-Console.WriteLine("🎰 Workshop Lottery - Phase 1 Complete 🎰");
+Console.WriteLine("🎰 Workshop Lottery - Phase 2 Complete 🎰");
 Console.WriteLine("=========================================");
 Console.WriteLine();
 
-var config = new LotteryConfiguration { InputPath = "test.xlsx" };
-Console.WriteLine($"✅ Domain models loaded successfully!");
-Console.WriteLine($"   Default capacity: {config.Capacity} seats per workshop");
-Console.WriteLine($"   Effective seed: {config.GetEffectiveSeed()}");
-Console.WriteLine($"   Workshop order: {string.Join(", ", config.WorkshopOrder)}");
+// Test with real sample file if available
+var sampleFile = "input/AgentCon Zurich – Workshop Signup (Lottery + Standby)(1-7).xlsx";
+if (File.Exists(sampleFile))
+{
+    Console.WriteLine($"📁 Testing with real sample file: {sampleFile}");
+    Console.WriteLine();
+    
+    var parser = new ExcelParserService();
+    var registrations = parser.ParseRegistrations(sampleFile);
+    
+    Console.WriteLine();
+    Console.WriteLine($"🎯 Sample registrations (first 3):");
+    foreach (var reg in registrations.Take(3))
+    {
+        Console.WriteLine($"   Row {reg.RowNumber}: {reg.FullName} ({reg.Email})");
+        Console.WriteLine($"      Laptop: {reg.LaptopResponse ?? "N/A"}, Commit: {reg.Commit10MinResponse ?? "N/A"}");
+        if (reg.RankingsResponse != null)
+            Console.WriteLine($"      Rankings: {reg.RankingsResponse}");
+    }
+}
+else
+{
+    Console.WriteLine("⚠️ Sample file not found. Run from project root directory.");
+}
+
 Console.WriteLine();
-
-// Quick model validation
-var registration = new Registration 
-{ 
-    FullName = "Test User", 
-    Email = "TEST@Example.com",
-    HasLaptop = true,
-    WillCommit10Min = true
-};
-
-Console.WriteLine($"📧 Email normalization test:");
-Console.WriteLine($"   Original: '{registration.Email}'");
-Console.WriteLine($"   Normalized: '{registration.NormalizedEmail}'");
-Console.WriteLine($"   Meets basic requirements: {registration.MeetsBasicRequirements()}");
-Console.WriteLine();
-
-var pref = new WorkshopPreference { Requested = true, Rank = 1 };
-Console.WriteLine($"⚖️ Weight calculation test:");
-Console.WriteLine($"   Rank 1 weight: {new WorkshopPreference { Rank = 1 }.Weight} (expected: 5)");
-Console.WriteLine($"   Rank 2 weight: {new WorkshopPreference { Rank = 2 }.Weight} (expected: 2)");
-Console.WriteLine($"   Rank 3 weight: {new WorkshopPreference { Rank = 3 }.Weight} (expected: 1)");
-Console.WriteLine($"   No rank weight: {new WorkshopPreference().Weight} (expected: 1)");
-Console.WriteLine();
-
-Console.WriteLine("🎸 Phase 1 ROCKS! Ready for Phase 2! 🎸");
+Console.WriteLine("🎸 Phase 2 ROCKS! Excel Parser Complete! 🎸");
