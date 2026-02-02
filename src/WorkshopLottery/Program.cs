@@ -1,34 +1,106 @@
-﻿using WorkshopLottery.Models;
+﻿using System.CommandLine;
+using WorkshopLottery.Models;
 using WorkshopLottery.Services;
 
-Console.WriteLine("🎰 Workshop Lottery - Phase 2 Complete 🎰");
-Console.WriteLine("=========================================");
-Console.WriteLine();
-
-// Test with real sample file if available
-var sampleFile = "input/AgentCon Zurich – Workshop Signup (Lottery + Standby)(1-7).xlsx";
-if (File.Exists(sampleFile))
+// Define CLI options
+var inputOption = new Option<FileInfo>(
+    name: "--input",
+    description: "Path to the input Excel file (MS Forms export)")
 {
-    Console.WriteLine($"📁 Testing with real sample file: {sampleFile}");
-    Console.WriteLine();
-    
-    var parser = new ExcelParserService();
-    var registrations = parser.ParseRegistrations(sampleFile);
-    
-    Console.WriteLine();
-    Console.WriteLine($"🎯 Sample registrations (first 3):");
-    foreach (var reg in registrations.Take(3))
+    IsRequired = true
+};
+inputOption.AddAlias("-i");
+
+var outputOption = new Option<FileInfo?>(
+    name: "--output",
+    description: "Path to the output Excel file (defaults to input filename with _results suffix)")
+{
+    IsRequired = false
+};
+outputOption.AddAlias("-o");
+
+var seedOption = new Option<int?>(
+    name: "--seed",
+    description: "Random seed for reproducible results (optional)")
+{
+    IsRequired = false
+};
+seedOption.AddAlias("-s");
+
+var capacityOption = new Option<int>(
+    name: "--capacity",
+    description: "Capacity per workshop (default: 34)",
+    getDefaultValue: () => 34)
+{
+    IsRequired = false
+};
+capacityOption.AddAlias("-c");
+
+var verboseOption = new Option<bool>(
+    name: "--verbose",
+    description: "Enable verbose output",
+    getDefaultValue: () => false);
+verboseOption.AddAlias("-v");
+
+// Build root command
+var rootCommand = new RootCommand("🎰 Workshop Lottery - Fair workshop seat assignment using weighted lottery")
+{
+    inputOption,
+    outputOption,
+    seedOption,
+    capacityOption,
+    verboseOption
+};
+
+rootCommand.SetHandler(
+    (FileInfo input, FileInfo? output, int? seed, int capacity, bool verbose) =>
     {
-        Console.WriteLine($"   Row {reg.RowNumber}: {reg.FullName} ({reg.Email})");
-        Console.WriteLine($"      Laptop: {reg.LaptopResponse ?? "N/A"}, Commit: {reg.Commit10MinResponse ?? "N/A"}");
-        if (reg.RankingsResponse != null)
-            Console.WriteLine($"      Rankings: {reg.RankingsResponse}");
-    }
-}
-else
-{
-    Console.WriteLine("⚠️ Sample file not found. Run from project root directory.");
-}
+        try
+        {
+            // Validate input file exists
+            if (!input.Exists)
+            {
+                SummaryLogger.LogError($"Input file not found: {input.FullName}");
+                Environment.Exit(1);
+                return;
+            }
 
-Console.WriteLine();
-Console.WriteLine("🎸 Phase 2 ROCKS! Excel Parser Complete! 🎸");
+            // Determine output path
+            var outputPath = output?.FullName 
+                ?? Path.Combine(
+                    input.DirectoryName ?? ".",
+                    Path.GetFileNameWithoutExtension(input.Name) + "_results.xlsx");
+
+            // Print banner
+            Console.WriteLine();
+            Console.WriteLine("🎰 ═══════════════════════════════════════════════════════════ 🎰");
+            Console.WriteLine("              WORKSHOP LOTTERY SYSTEM v1.0                       ");
+            Console.WriteLine("        Fair seat assignment using weighted lottery              ");
+            Console.WriteLine("🎰 ═══════════════════════════════════════════════════════════ 🎰");
+            Console.WriteLine();
+
+            // Run the lottery
+            var orchestrator = LotteryOrchestrator.CreateDefault();
+            var result = orchestrator.Run(
+                input.FullName,
+                outputPath,
+                seed,
+                capacity);
+
+            SummaryLogger.LogSuccess("🎸 Lottery completed successfully! 🎸");
+            Environment.Exit(0);
+        }
+        catch (Exception ex)
+        {
+            SummaryLogger.LogError($"Lottery failed: {ex.Message}");
+            if (verbose)
+            {
+                Console.WriteLine(ex.StackTrace);
+            }
+            Environment.Exit(1);
+        }
+    },
+    inputOption, outputOption, seedOption, capacityOption, verboseOption);
+
+// Run the CLI
+return await rootCommand.InvokeAsync(args);
