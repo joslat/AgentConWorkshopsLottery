@@ -14,6 +14,7 @@ This application reads MS Forms Excel exports containing workshop registrations 
 - **Fuzzy Column Matching**: Handles MS Forms Excel export variations
 - **Reproducible Results**: Optional seed for deterministic outcomes
 - **Rich Output**: Color-coded Excel reports and console summaries
+- **🎪 Spectacular Mode**: Dramatic animations, spinners, and colorful reveals!
 
 ## Quick Start
 
@@ -44,6 +45,47 @@ dotnet run --project src/WorkshopLottery -- \
 | `--seed` | `-s` | Random seed for reproducibility | No | Random |
 | `--capacity` | `-c` | Capacity per workshop | No | 34 |
 | `--verbose` | `-v` | Enable verbose output | No | false |
+| `--spectacular` | `-S`, `--show` | Enable dramatic animations 🎪 | No | false |
+| `--slow` | | Slow animations (2x) - auto-enables spectacular | No | false |
+| `--slower` | | Slower animations (3x) - auto-enables spectacular | No | false |
+| `--slowest` | | Slowest animations (5x) - auto-enables spectacular | No | false |
+
+## 🎪 Spectacular Mode
+
+For a fun, dramatic lottery experience with animations:
+
+```bash
+# Run with spectacular mode - dramatic reveals, spinners, and colorful output!
+dotnet run --project src/WorkshopLottery -- -i "input/sample-workshop-small-50.xlsx" -s 42 --spectacular
+
+# Or use the short flag
+dotnet run --project src/WorkshopLottery -- -i "input/sample-workshop-small-50.xlsx" -s 42 -S
+
+# Run slower for more emphasis (2x slower)
+dotnet run --project src/WorkshopLottery -- -i "input/sample-workshop-small-50.xlsx" -s 42 -S --slow
+
+# Even slower for presentations (3x slower)
+dotnet run --project src/WorkshopLottery -- -i "input/sample-workshop-small-50.xlsx" -s 42 -S --slower
+
+# Maximum drama! (5x slower)
+dotnet run --project src/WorkshopLottery -- -i "input/sample-workshop-small-50.xlsx" -s 42 -S --slowest
+```
+
+**Speed Options:**
+| Flag | Multiplier | Use Case |
+|------|------------|----------|
+| (default) | 1x | Quick demo |
+| `--slow` | 2x | Standard presentation |
+| `--slower` | 3x | Live event with audience |
+| `--slowest` | 5x | Maximum dramatic effect |
+
+**Features in Spectacular Mode:**
+- 🎨 Large FIGlet ASCII art banner
+- ⏳ Animated spinners with fun messages like "🔮 Consulting the probability oracle..."
+- ⏱️ Countdown reveals: "3... 2... 1... 🎉 REVEALING!"
+- 📊 Animated table population (names appear one by one)
+- 🎉 Final celebration with stats panel
+- 🌈 Full color output using Spectre.Console
 
 ## Sample Files
 
