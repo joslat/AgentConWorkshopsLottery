@@ -35,12 +35,17 @@ public class WorkshopResult
     /// <summary>
     /// Number of participants accepted in Wave 1 (unique assignment).
     /// </summary>
-    public int Wave1Count => Accepted.Count(a => a.Wave == 1);
+    public int Wave1Count => Accepted.Count(a => a.Wave == 1 && !a.IsLowPriority);
     
     /// <summary>
     /// Number of participants accepted in Wave 2 (fill remaining).
     /// </summary>
-    public int Wave2Count => Accepted.Count(a => a.Wave == 2);
+    public int Wave2Count => Accepted.Count(a => a.Wave == 2 && !a.IsLowPriority);
+    
+    /// <summary>
+    /// Number of low-priority participants accepted (disqualified filling empty seats).
+    /// </summary>
+    public int LowPriorityCount => Accepted.Count(a => a.IsLowPriority);
     
     /// <summary>
     /// Number of participants on the waitlist.

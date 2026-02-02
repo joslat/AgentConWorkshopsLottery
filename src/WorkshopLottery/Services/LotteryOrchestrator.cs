@@ -91,6 +91,12 @@ public class LotteryOrchestrator : ILotteryOrchestrator
         var result = _lotteryEngine.RunLottery(validationResult.EligibleRegistrations, config);
         SummaryLogger.LogSuccess("Lottery complete!");
 
+        // Step 4b: Fill remaining seats with disqualified participants (low priority)
+        FillRemainingSeatsWithDisqualified(
+            result, 
+            validationResult.DisqualifiedRegistrations, 
+            config.Capacity);
+
         // Update result with validation counts (LotteryEngine only sees eligible registrations)
         var finalResult = new LotteryResult
         {
@@ -124,5 +130,61 @@ public class LotteryOrchestrator : ILotteryOrchestrator
             new ValidationService(),
             new LotteryEngine(),
             new ExcelWriterService());
+    }
+
+    /// <summary>
+    /// Fill remaining empty seats with disqualified participants as low-priority.
+    /// These participants didn't meet eligibility requirements but can fill empty spots.
+    /// </summary>
+    private static void FillRemainingSeatsWithDisqualified(
+        LotteryResult result,
+        IReadOnlyList<Registration> disqualifiedRegistrations,
+        int capacity)
+    {
+        if (disqualifiedRegistrations.Count == 0)
+            return;
+
+        var lowPriorityCount = 0;
+
+        foreach (var workshopId in new[] { WorkshopId.W1, WorkshopId.W2, WorkshopId.W3 })
+        {
+            if (!result.Results.TryGetValue(workshopId, out var workshopResult))
+                continue;
+
+            var emptySeats = capacity - workshopResult.AcceptedCount;
+            if (emptySeats <= 0)
+                continue;
+
+            // Find disqualified people who requested this workshop
+            var candidates = disqualifiedRegistrations
+                .Where(r => r.WorkshopPreferences.TryGetValue(workshopId, out var pref) && pref.Requested)
+                .ToList();
+
+            if (candidates.Count == 0)
+                continue;
+
+            // Assign low-priority participants to fill empty seats
+            var nextOrder = workshopResult.Assignments.Count + 1;
+            var seatsToFill = Math.Min(emptySeats, candidates.Count);
+
+            for (int i = 0; i < seatsToFill; i++)
+            {
+                var candidate = candidates[i];
+                workshopResult.Assignments.Add(new WorkshopAssignment
+                {
+                    Registration = candidate,
+                    Status = AssignmentStatus.Accepted,
+                    Wave = 3, // Wave 3 = low priority
+                    Order = nextOrder++,
+                    IsLowPriority = true
+                });
+                lowPriorityCount++;
+            }
+        }
+
+        if (lowPriorityCount > 0)
+        {
+            SummaryLogger.LogProgress($"Filled {lowPriorityCount} empty seats with low-priority (disqualified) participants.");
+        }
     }
 }

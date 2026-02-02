@@ -97,11 +97,12 @@ public static class SummaryLogger
         var waitlisted = workshop.Waitlisted.ToList();
         var wave1 = workshop.Wave1Count;
         var wave2 = workshop.Wave2Count;
+        var lowPriority = workshop.LowPriorityCount;
 
         Console.WriteLine($"🎯 {GetWorkshopDisplayName(workshop.WorkshopId)}");
         Console.WriteLine("───────────────────────────────────────────────────────────────");
         Console.WriteLine($"   Capacity:    {capacity}");
-        Console.WriteLine($"   Assigned:    {assigned.Count} (Wave 1: {wave1}, Wave 2: {wave2})");
+        Console.WriteLine($"   Assigned:    {assigned.Count} (Wave 1: {wave1}, Wave 2: {wave2}, Low Priority: {lowPriority})");
         Console.WriteLine($"   Waitlisted:  {waitlisted.Count}");
         Console.WriteLine($"   Fill Rate:   {(capacity > 0 ? assigned.Count * 100 / capacity : 0)}%");
         Console.WriteLine();
@@ -112,7 +113,7 @@ public static class SummaryLogger
             int order = 1;
             foreach (var assignment in assigned.OrderBy(a => a.Wave).ThenBy(a => a.Order))
             {
-                var waveIndicator = assignment.Wave == 1 ? "🟢" : "🟡";
+                var waveIndicator = assignment.IsLowPriority ? "🟠" : (assignment.Wave == 1 ? "🟢" : "🟡");
                 Console.WriteLine($"      {order,2}. {waveIndicator} {assignment.Registration.FullName} ({assignment.Registration.Email})");
                 order++;
             }

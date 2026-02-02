@@ -110,6 +110,7 @@ public class ExcelWriterService : IExcelWriterService
         var rowRange = worksheet.Range(row, 1, row, Headers.Length);
         rowRange.Style.Fill.BackgroundColor = assignment.Status switch
         {
+            AssignmentStatus.Accepted when assignment.IsLowPriority => XLColor.LightSalmon,
             AssignmentStatus.Accepted when assignment.Wave == 1 => XLColor.LightGreen,
             AssignmentStatus.Accepted when assignment.Wave == 2 => XLColor.LightYellow,
             AssignmentStatus.Waitlisted => XLColor.LightGray,
@@ -209,8 +210,9 @@ public class ExcelWriterService : IExcelWriterService
         worksheet.Cell(row, 2).Value = "Accepted";
         worksheet.Cell(row, 3).Value = "Wave 1";
         worksheet.Cell(row, 4).Value = "Wave 2";
-        worksheet.Cell(row, 5).Value = "Waitlist";
-        worksheet.Range(row, 1, row, 5).Style.Font.Bold = true;
+        worksheet.Cell(row, 5).Value = "Low Priority";
+        worksheet.Cell(row, 6).Value = "Waitlist";
+        worksheet.Range(row, 1, row, 6).Style.Font.Bold = true;
         row++;
 
         foreach (var (workshopId, workshopResult) in result.Results.OrderBy(kvp => kvp.Key))
@@ -219,7 +221,8 @@ public class ExcelWriterService : IExcelWriterService
             worksheet.Cell(row, 2).Value = workshopResult.AcceptedCount;
             worksheet.Cell(row, 3).Value = workshopResult.Wave1Count;
             worksheet.Cell(row, 4).Value = workshopResult.Wave2Count;
-            worksheet.Cell(row, 5).Value = workshopResult.WaitlistCount;
+            worksheet.Cell(row, 5).Value = workshopResult.LowPriorityCount;
+            worksheet.Cell(row, 6).Value = workshopResult.WaitlistCount;
             row++;
         }
 

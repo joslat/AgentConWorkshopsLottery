@@ -25,4 +25,11 @@ public record WorkshopAssignment
     /// Order position in the assignment (1-based).
     /// </summary>
     public int Order { get; init; }
+    
+    /// <summary>
+    /// Whether this is a low-priority assignment (disqualified participant filling an empty seat).
+    /// Low-priority participants didn't meet eligibility requirements (no laptop or won't commit)
+    /// but were assigned because there were remaining empty seats after eligible participants.
+    /// </summary>
+    public bool IsLowPriority { get; init; }
 }

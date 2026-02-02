@@ -1,6 +1,11 @@
 ﻿using System.CommandLine;
+using System.Text;
 using WorkshopLottery.Models;
 using WorkshopLottery.Services;
+
+// Set console encoding to UTF-8 for proper emoji display
+Console.OutputEncoding = Encoding.UTF8;
+Console.InputEncoding = Encoding.UTF8;
 
 // Define CLI options
 var inputOption = new Option<FileInfo>(

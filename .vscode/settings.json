@@ -2,6 +2,7 @@
     "chat.tools.terminal.autoApprove": {
         "mkdir": true,
         "dotnet new": true,
-        "dotnet sln": true
+        "dotnet sln": true,
+        "dotnet run": true
     }
 }
